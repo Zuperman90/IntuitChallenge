@@ -40,9 +40,12 @@ Three Public APIs used:
 Sample Output
 -----------------------
 Enter the company code you want to invest in : AAPL
+
 Enter the company name : Apple Inc
+
 ::::::::::::::::::::::::::
 The percentage increase over the time period is 91.95238095238093
+
 :::::Financial Advice:::::
 Good showing! OK to invest.
 
