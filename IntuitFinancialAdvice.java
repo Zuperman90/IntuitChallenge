@@ -1,3 +1,13 @@
+
+/* 
+ * IntuitFinancialAdvice.java 
+ * 
+ * @version: $Id: IntuitFinancialAdvice.java,v 1.00 2016/09/10 12:00:00 
+ * 
+ * @author Ajith Paul
+ *
+ *
+ */
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,23 +25,32 @@ import org.json.simple.parser.JSONParser;
 public class IntuitFinancialAdvice{
 	
 	static String tickerSymbol;
- 
+	
+	//Main class for getting user inputs and calling the utility functions that give advice.
+	
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
     	try {
     	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     	System.out.print("Enter the company code you want to invest in : ");
 		tickerSymbol = br.readLine();
+		System.out.print("Enter the company name : ");
 		String name = br.readLine();
+		
 		readStocks(tickerSymbol);
 		readWiki(name);
 		readTopGainers();
+		
 		} catch (Exception e) {
 			System.err.println("Unable to find data for the company.Try again with correct ticker stock symbol");
         	System.err.println("Eg: AAPL for Apple Inc.");
 		}
     }
-    
+    /*
+	 * reads data about stocks from quandl api.
+	 * The data is for the time period of last 10 years and condensed quarterly
+	 * 
+	 */
     private static void readStocks(String name){
     	JSONParser parser = new JSONParser();
     	 
@@ -42,7 +61,7 @@ public class IntuitFinancialAdvice{
         	JSONObject dataset =  (JSONObject)jsonObject.get("dataset");
             JSONArray stockPriceList = (JSONArray) dataset.get("data");
             if(stockPriceList.size()==0){
-            	System.err.println("Unable to find data for the company.Try again with correct NASDAQ code!");
+            	System.err.println("Unable to find data for the company.Try again with correct company ticker code!");
             	System.err.println("Eg: AAPL for Apple Inc.");
             	return;
             }
@@ -55,9 +74,14 @@ public class IntuitFinancialAdvice{
             	prices.add((Double)eg.get(1));
             }
             double percentage = (prices.get(prices.size()-1)-prices.get(0))*100/prices.size();
+            
             System.out.println("::::::::::::::::::::::::::");
+            
             System.out.println("The percentage increase over the time period is "+ percentage);
+            
             System.out.println(":::::Financial Advice:::::");
+            
+            
             if(percentage > 500)
             	System.out.println("Excellent appreciation! Safe to invest!");
             else if (percentage > 50)
@@ -69,6 +93,12 @@ public class IntuitFinancialAdvice{
         }
     }
     
+    /*
+	 * Uses wikipedia api to fetch data about the company
+	 * The name has to be the official name of the company!
+	 * 
+	 */
+    
     private static void readWiki(String name){
     	try {
     	JSONParser parser = new JSONParser();
@@ -76,6 +106,8 @@ public class IntuitFinancialAdvice{
     	String wikiJson = readUrl("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&titles=apple%20Inc.&format=json");
     	Object obj = parser.parse(wikiJson);
     	JSONObject jsonObject = (JSONObject) obj;
+    	
+    	
     	JSONObject author =  (JSONObject)jsonObject.get("query");	
     	JSONObject pages =  (JSONObject)author.get("pages");
     	Set<Object> keys = pages.keySet();
@@ -92,29 +124,43 @@ public class IntuitFinancialAdvice{
         }
     }
     
+    /*
+	 * Gets a list of top gainers for the day using a public API
+	 * 
+	 */
+    
     private static void readTopGainers(){
     	try {
     	JSONParser parser = new JSONParser();
     	String topJson = readUrl("https://www.nseindia.com/live_market/dynaContent/live_analysis/gainers/niftyGainers1.json");
     	Object obj = parser.parse(topJson);
+    	
     	JSONObject jsonObject = (JSONObject) obj;
     	JSONArray companyList = (JSONArray) jsonObject.get("data");
     	Iterator<JSONObject> iterator = companyList.iterator();
     	System.out.println(":::::List of top Gainers today:::::");
     	List<String> comList = new ArrayList<>();
+    	
         while (iterator.hasNext()) {
         	JSONObject jobj = (JSONObject) iterator.next();
         	comList.add((String) jobj.get("symbol"));
             System.out.println(jobj.get("symbol"));
         }
+        
         if(!comList.contains(tickerSymbol)){
         	System.out.println();
         	System.out.println("Your desired company does not figure in the top Gainers List!");
         }
+        
     	} catch (Exception e) {
     		
         }
     }
+    
+    /*
+	 * Reads the given url from internet and returns the result in string format
+	 * 
+	 */
     
     private static String readUrl(String urlString) throws Exception {
         BufferedReader reader = null;
